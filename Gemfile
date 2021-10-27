@@ -45,4 +45,4 @@ gem 'bootsnap', require: false
 
 gem 'listen', group: :development
 
-gem 'google-cloud-language'
+gem 'google-cloud-language', '1.3.3'

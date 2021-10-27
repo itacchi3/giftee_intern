@@ -25,6 +25,6 @@ class GoogleCloudLanguageClient
       content: text,
       type: Google::Cloud::Language::V1::Document::Type::PLAIN_TEXT
     }
-    @client.analyze_sentiment document: document
+    @client.analyze_sentiment(document: document)
   end
 end
