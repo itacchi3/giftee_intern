@@ -5,8 +5,8 @@ class WebhookController < ApplicationController
 
   def client
     @client ||= Line::Bot::Client.new { |config|
-      config.channel_secret = ENV["LINE_CHANNEL_SECRET"]
-      config.channel_token = ENV["LINE_CHANNEL_TOKEN"]
+      config.channel_secret = Rails.application.credentials.linebot[:LINE_CHANNEL_SECRET]
+      config.channel_token = Rails.application.credentials.linebot[:LINE_CHANNEL_TOKEN]
     }
   end
 
@@ -25,14 +25,17 @@ class WebhookController < ApplicationController
         case event.type
         when Line::Bot::Event::MessageType::Text
           if event.message['text'].start_with?("/")
-            response = "コマンド"
+            text = 'コマンド'
           else
-            response = event.message['text']
+            google_cloud_language_client = GoogleCloudLanguageClient.new
+            response = google_cloud_language_client.analyze_sentiment(text: event.message['text'])
+            score = response.document_sentiment.score.to_f.round(1)
+            text = "ポジティブ度: #{score}"
           end
 
           message = {
             type: 'text',
-            text: response
+            text: text
           }
           client.reply_message(event['replyToken'], message)
 
