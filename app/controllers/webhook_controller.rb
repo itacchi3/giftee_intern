@@ -24,27 +24,35 @@ class WebhookController < ApplicationController
       when Line::Bot::Event::Message
         case event.type
         when Line::Bot::Event::MessageType::Text
-          group = Group.find_by(group_id: event['source']['groupId'])
-          if group.nil?
-            Group.create(group_id: event['source']['groupId'], is_measurement_period: false)
-            group = Group.find_by(group_id: event['source']['groupId'])
+          message_text = event.message['text']
+          group = Group.find_or_create_by!(group_id: event['source']['groupId']) do |group|
+            group.is_measurement_period = false
           end
 
-          if event.message['text'] === "/スタート"
+          if message_text === "/スタート"
             group.is_measurement_period = true
-            group.save
-          elsif event.message['text'] === "/ストップ"
+            group.save!
+            message = {
+              type: 'text',
+              text: "計測開始"
+            }
+            client.reply_message(event['replyToken'], message)
+          elsif message_text === "/ストップ"
             group.is_measurement_period = false
-            group.save
+            group.save!
+            message = {
+              type: 'text',
+              text: '計測停止'
+            }
+            client.reply_message(event['replyToken'], message)
           else
             if group.is_measurement_period
               google_cloud_language_client = GoogleCloudLanguageClient.new
-              response = google_cloud_language_client.analyze_sentiment(text: event.message['text'])
+              response = google_cloud_language_client.analyze_sentiment(text: message_text)
               score = response.document_sentiment.score.to_f.round(1)
-              text = "ポジティブ度: #{score}"
               message = {
                 type: 'text',
-                text: text
+                text: 'ポジティブ度: #{score}'
               }
               client.reply_message(event['replyToken'], message)
             end
