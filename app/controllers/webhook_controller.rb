@@ -42,7 +42,7 @@ class WebhookController < ApplicationController
             group.save!
             message = {
               type: 'text',
-              text: '計測停止'
+              text: "計測停止"
             }
             client.reply_message(event['replyToken'], message)
           else
@@ -52,7 +52,7 @@ class WebhookController < ApplicationController
               score = response.document_sentiment.score.to_f.round(1)
               message = {
                 type: 'text',
-                text: 'ポジティブ度: #{score}'
+                text: "ポジティブ度: #{score}"
               }
               client.reply_message(event['replyToken'], message)
             end
