@@ -24,20 +24,37 @@ class WebhookController < ApplicationController
       when Line::Bot::Event::Message
         case event.type
         when Line::Bot::Event::MessageType::Text
-          if event.message['text'].start_with?("/")
-            text = 'コマンド'
-          else
-            google_cloud_language_client = GoogleCloudLanguageClient.new
-            response = google_cloud_language_client.analyze_sentiment(text: event.message['text'])
-            score = response.document_sentiment.score.to_f.round(1)
-            text = "ポジティブ度: #{score}"
-          end
+          message_text = event.message['text']
+          group = Group.find_or_create_by!(group_id: event['source']['groupId'])
 
-          message = {
-            type: 'text',
-            text: text
-          }
-          client.reply_message(event['replyToken'], message)
+          if message_text === "/スタート"
+            group.is_measurement_period = true
+            group.save!
+            message = {
+              type: 'text',
+              text: "計測開始"
+            }
+            client.reply_message(event['replyToken'], message)
+          elsif message_text === "/ストップ"
+            group.is_measurement_period = false
+            group.save!
+            message = {
+              type: 'text',
+              text: "計測停止"
+            }
+            client.reply_message(event['replyToken'], message)
+          else
+            if group.is_measurement_period
+              google_cloud_language_client = GoogleCloudLanguageClient.new
+              response = google_cloud_language_client.analyze_sentiment(text: message_text)
+              score = response.document_sentiment.score.to_f.round(1)
+              message = {
+                type: 'text',
+                text: "ポジティブ度: #{score}"
+              }
+              client.reply_message(event['replyToken'], message)
+            end
+          end
 
         when Line::Bot::Event::MessageType::Image, Line::Bot::Event::MessageType::Video
           response = client.get_message_content(event.message['id'])
