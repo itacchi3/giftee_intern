@@ -25,9 +25,7 @@ class WebhookController < ApplicationController
         case event.type
         when Line::Bot::Event::MessageType::Text
           message_text = event.message['text']
-          group = Group.find_or_create_by!(group_id: event['source']['groupId']) do |group|
-            group.is_measurement_period = false
-          end
+          group = Group.find_or_create_by!(group_id: event['source']['groupId'])
 
           if message_text === "/スタート"
             group.is_measurement_period = true
