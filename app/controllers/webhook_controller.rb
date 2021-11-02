@@ -39,6 +39,12 @@ class WebhookController < ApplicationController
                 text: "計測開始"
               }
               client.reply_message(event['replyToken'], message)
+            elsif message_text == "/スタート" && group.is_measurement_period
+              message = {
+                type: 'text',
+                text: "計測中"
+              }
+              client.reply_message(event['replyToken'], message)
             elsif message_text == "/ストップ" && group.is_measurement_period
               group.is_measurement_period = false
               group.save!
@@ -57,6 +63,12 @@ class WebhookController < ApplicationController
               message = {
                 type: 'text',
                 text: reply_text
+              }
+              client.reply_message(event['replyToken'], message)
+            elsif message_text == "/ストップ" && !group.is_measurement_period
+              message = {
+                type: 'text',
+                text: "計測を開始していません"
               }
               client.reply_message(event['replyToken'], message)
             else
