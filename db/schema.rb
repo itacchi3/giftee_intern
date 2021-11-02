@@ -10,14 +10,32 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_28_021728) do
+ActiveRecord::Schema.define(version: 2021_10_28_055117) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
+  create_table "group_score_calc_sets", force: :cascade do |t|
+    t.string "group_id", null: false
+    t.integer "set_id", default: 0, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["group_id"], name: "index_group_score_calc_sets_on_group_id", unique: true
+  end
+
   create_table "groups", force: :cascade do |t|
-    t.string "group_id"
-    t.boolean "is_measurement_period"
+    t.string "group_id", null: false
+    t.boolean "is_measurement_period", default: false, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["group_id"], name: "index_groups_on_group_id", unique: true
+  end
+
+  create_table "user_scores", force: :cascade do |t|
+    t.string "user_id", null: false
+    t.string "group_id", null: false
+    t.integer "set_id", null: false
+    t.integer "score", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
